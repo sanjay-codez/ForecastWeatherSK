@@ -31,6 +31,7 @@ A modern, minimalistic weather desktop application built using Flutter. This app
 ![image](https://github.com/user-attachments/assets/f865a862-1ba5-491c-92ad-521f8d903345)
  
  City search with suggestions dropdown  
+ 
 ![image](https://github.com/user-attachments/assets/39b66428-dca8-4229-bf95-33d1539e63d0)
 
  Main weather display with AQI and temperature  
