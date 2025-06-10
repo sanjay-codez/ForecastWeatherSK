@@ -3,6 +3,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async'; // For Timer and debounce
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,13 +51,45 @@ class WeatherHomePage extends StatefulWidget {
 
 class _WeatherHomePageState extends State<WeatherHomePage> {
   final TextEditingController _controller = TextEditingController();
+  
   String city = "New York";
   String temperature = "";
   String condition = "";
   bool isLoading = false;
   int aqi = 0; // Air Quality Index
   int humidity = 0; // Humidity percentage
+  List<dynamic> suggestions = []; // To store city suggestions
+  Timer? _debounce; // For debouncing API calls
+  
+  void onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      fetchSuggestions(query);
+    });
+  }
 
+  Future<void> fetchSuggestions(String query) async {
+    if (query.isEmpty) {
+      setState(() => suggestions = []);
+      return;
+    }
+    final apiKey = '7c445a460fcf435fb9313332251006';
+    final url = Uri.parse('https://api.weatherapi.com/v1/search.json?key=$apiKey&q=$query');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      setState(() {
+        suggestions = jsonDecode(response.body);
+      });
+    }
+  }
+  
+  
+  
+  
+  
+  
+  
+  
   Future<void> fetchWeather(String cityName) async {
     const apiKey = '7c445a460fcf435fb9313332251006'; // Replace with your real key
     final url = Uri.parse(
@@ -159,6 +192,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
               children: [
                 TextField(
                   controller: _controller,
+                  onChanged: onSearchChanged,
                   onSubmitted: fetchWeather,
                   textInputAction: TextInputAction.search,
                   style: const TextStyle(fontSize: 18),
@@ -175,6 +209,54 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
                     ),
                   ),
                 ),
+
+                if(suggestions.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: suggestions.map((suggestion) {
+                        return ListTile(
+                          title: Text(suggestion['name']),
+                          onTap: () {
+                            _controller.text = suggestion['name'];
+                            fetchWeather(suggestion['name']);
+                            setState(() => suggestions = []);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 const SizedBox(height: 40),
                 if (isLoading)
                   const CircularProgressIndicator()
@@ -228,9 +310,14 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
                                     fontSize: 64,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: -1.5,
-                                    color: double.parse(temperature) > 80
-                                        ? Colors.redAccent
-                                        : Colors.blueAccent,
+                                    // make sure to consider when temperature is empty
+
+                                    color: temperature.isEmpty
+                                        ? Colors.black54
+                                        : double.parse(temperature) > 80
+                                            ? Colors.redAccent
+                                            : Colors.blueAccent,
+                                    
                                   ),
                                 ),
                                 
@@ -343,10 +430,14 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
                                   ),
                                 ),
                                 
-                                
+                                // if humidity is -1, show N/A, otherwise show humidity value
+
+
+
+
                                 const SizedBox(height: 8),
                                 Text(
-                                  humidity.toString() + "%", // Example value
+                                  humidity == -1 ? 'N/A' : '$humidity%',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
