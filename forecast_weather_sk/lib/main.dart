@@ -188,278 +188,264 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: Column(
+            child: Stack(
               children: [
-                TextField(
-                  controller: _controller,
-                  onChanged: onSearchChanged,
-                  onSubmitted: fetchWeather,
-                  textInputAction: TextInputAction.search,
-                  style: const TextStyle(fontSize: 18),
-                  decoration: InputDecoration(
-                    hintText: "Search for a city",
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-
-                if(suggestions.isNotEmpty)
-                  Container(
-                    margin: const EdgeInsets.only(top: 8),
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                Column(
+                  children: [
+                    TextField(
+                      controller: _controller,
+                      onChanged: onSearchChanged,
+                      onSubmitted: (value) {
+                        fetchWeather(value);
+                        setState(() => suggestions = []); // Clear suggestions when Enter is pressed
+                      },
+                      textInputAction: TextInputAction.search,
+                      style: const TextStyle(fontSize: 18),
+                      decoration: InputDecoration(
+                        hintText: "Search for a city",
+                        prefixIcon: const Icon(Icons.search),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
                         ),
-                      ],
+                      ),
                     ),
-                    child: Column(
-                      children: suggestions.map((suggestion) {
-                        return ListTile(
-                          title: Text(suggestion['name']),
-                          onTap: () {
-                            _controller.text = suggestion['name'];
-                            fetchWeather(suggestion['name']);
-                            setState(() => suggestions = []);
-                          },
-                        );
-                      }).toList(),
-                    ),
-                  ),
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                const SizedBox(height: 40),
-                if (isLoading)
-                  const CircularProgressIndicator()
-                else
-                  Expanded(
-                    child: Center(
-                      child: SizedBox(
-                        width: window.physicalSize.width * 0.95,
-                        height: window.physicalSize.height * 0.8,
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24)),
-                          elevation: 8,
-                          color: Colors.white,
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  getWeatherIcon(condition),
-                                  size: 100,
-                                  color: Colors.blueAccent,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  city,
-                                  style: const TextStyle(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  condition,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                // temperature text color changes based on temperature (> 80°F is red, otherwise blue)
-                                Text(
-                                  temperature.isEmpty
-                                      ? 'N/A'
-                                      : double.parse(temperature) > 80
-                                          ? '$temperature°F'
-                                          : '$temperature°F',
-                                  style: TextStyle(
-                                    fontSize: 64,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: -1.5,
-                                    // make sure to consider when temperature is empty
-
-                                    color: temperature.isEmpty
-                                        ? Colors.black54
-                                        : double.parse(temperature) > 80
-                                            ? Colors.redAccent
-                                            : Colors.blueAccent,
-                                    
-                                  ),
-                                ),
-                                
-                                
-                                
-                                
-                                // textbox saying air quality index
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'Air Quality Index',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-
-                                // AQI bar with 6 equal segments for each category
-                                const SizedBox(height: 8),
-                                Stack(
-                                  alignment: Alignment.centerLeft,
+                    const SizedBox(height: 40),
+                    if (isLoading)
+                      const CircularProgressIndicator()
+                    else
+                      Expanded(
+                        child: Center(
+                          child: SizedBox(
+                            width: window.physicalSize.width * 0.95,
+                            height: window.physicalSize.height * 0.8,
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24)),
+                              elevation: 8,
+                              color: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(9), // Adjust radius as needed
-                                      child: Row(
-                                        children: [
-                                          // 6 equal segments for AQI categories, with rounded corners on ends
-                                          Expanded(
-                                            child: Container(
-                                              height: 18,
-                                              decoration: const BoxDecoration(
-                                                color: Colors.green,
-                                                borderRadius: BorderRadius.horizontal(left: Radius.circular(9)),
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Container(
-                                              height: 18,
-                                              color: Colors.yellow,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Container(
-                                              height: 18,
-                                              color: Colors.orange,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Container(
-                                              height: 18,
-                                              color: Colors.red,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Container(
-                                              height: 18,
-                                              color: Colors.purple,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Container(
-                                              height: 18,
-                                              decoration: const BoxDecoration(
-                                                color: Color(0xFF7E0023),
-                                                borderRadius: BorderRadius.horizontal(right: Radius.circular(9)),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                    Icon(
+                                      getWeatherIcon(condition),
+                                      size: 100,
+                                      color: Colors.blueAccent,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      city,
+                                      style: const TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    // AQI marker
-                                    Positioned(
-                                      left: (aqi.clamp(0, 500) / 500.0) * MediaQuery.of(context).size.width * 0.95, // adjust width if needed
-                                      child: Icon(Icons.arrow_drop_down, color: Colors.black, size: 28),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      condition,
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.black54,
+                                      ),
                                     ),
+                                    const SizedBox(height: 12),
+                                    // temperature text color changes based on temperature (> 80°F is red, otherwise blue)
+                                    Text(
+                                      temperature.isEmpty
+                                          ? 'N/A'
+                                          : double.parse(temperature) > 80
+                                              ? '$temperature°F'
+                                              : '$temperature°F',
+                                      style: TextStyle(
+                                        fontSize: 64,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: -1.5,
+                                        // make sure to consider when temperature is empty
+
+                                        color: temperature.isEmpty
+                                            ? Colors.black54
+                                            : double.parse(temperature) > 80
+                                                ? Colors.redAccent
+                                                : Colors.blueAccent,
+                                        
+                                      ),
+                                    ),
+                                    
+                                    
+                                    
+                                    
+                                    // textbox saying air quality index
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Air Quality Index',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+
+                                    // AQI bar with 6 equal segments for each category
+                                    const SizedBox(height: 8),
+                                    Stack(
+                                      alignment: Alignment.centerLeft,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(9), // Adjust radius as needed
+                                          child: Row(
+                                            children: [
+                                              // 6 equal segments for AQI categories, with rounded corners on ends
+                                              Expanded(
+                                                child: Container(
+                                                  height: 18,
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.green,
+                                                    borderRadius: BorderRadius.horizontal(left: Radius.circular(9)),
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Container(
+                                                  height: 18,
+                                                  color: Colors.yellow,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Container(
+                                                  height: 18,
+                                                  color: Colors.orange,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Container(
+                                                  height: 18,
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Container(
+                                                  height: 18,
+                                                  color: Colors.purple,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Container(
+                                                  height: 18,
+                                                  decoration: const BoxDecoration(
+                                                    color: Color(0xFF7E0023),
+                                                    borderRadius: BorderRadius.horizontal(right: Radius.circular(9)),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        // AQI marker
+                                        Positioned(
+                                          left: (aqi.clamp(0, 500) / 500.0) * MediaQuery.of(context).size.width * 0.95, // adjust width if needed
+                                          child: Icon(Icons.arrow_drop_down, color: Colors.black, size: 28),
+                                        ),
+                                      ],
+                                    ),
+
+                                    // AQI value text
+                                    const SizedBox(height: 8),  
+                                    Text(
+                                      aqi == -1 ? 'N/A' : '$aqi',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 16),
+                                    // textbox saying humidity
+                                    const Text(
+                                      'Humidity',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                    
+                                    // humidity bar with blue color
+                                    const SizedBox(height: 8),
+                                    LinearProgressIndicator(
+                                      value: humidity / 100, // Example value
+                                      backgroundColor: Colors.grey[300],
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.blue,
+                                      ),
+                                    ),
+                                    
+                                    // if humidity is -1, show N/A, otherwise show humidity value
+
+
+
+
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      humidity == -1 ? 'N/A' : '$humidity%',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                    
+                                    
+                                    
+                                    
                                   ],
                                 ),
-
-                                // AQI value text
-                                const SizedBox(height: 8),  
-                                Text(
-                                  aqi == -1 ? 'N/A' : '$aqi',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-
-                                const SizedBox(height: 16),
-                                // textbox saying humidity
-                                const Text(
-                                  'Humidity',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                
-                                // humidity bar with blue color
-                                const SizedBox(height: 8),
-                                LinearProgressIndicator(
-                                  value: humidity / 100, // Example value
-                                  backgroundColor: Colors.grey[300],
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.blue,
-                                  ),
-                                ),
-                                
-                                // if humidity is -1, show N/A, otherwise show humidity value
-
-
-
-
-                                const SizedBox(height: 8),
-                                Text(
-                                  humidity == -1 ? 'N/A' : '$humidity%',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                
-                                
-
-
-                                
-                                
-
-
-
-
-
-
-                              ],
+                              ),
                             ),
                           ),
                         ),
+                      ),
+                  ],
+                ),
+
+                if(suggestions.isNotEmpty)
+                  Positioned(
+                    top: 56, // Position below the search TextField
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: suggestions.map((suggestion) {
+                          return ListTile(
+                            title: Text(suggestion['name']),
+                            onTap: () {
+                              _controller.text = suggestion['name'];
+                              fetchWeather(suggestion['name']);
+                              setState(() => suggestions = []);
+                            },
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
